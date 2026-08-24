@@ -1,0 +1,129 @@
+Metadata-Version: 2.4
+Name: steam
+Version: 1.6.1
+Summary: Module for interacting with various Steam features
+Home-page: https://github.com/solsticegamestudios/steam
+Author: Rossen Georgiev / Solstice Game Studios
+Author-email: py-steam@solsticegamestudios.com
+License: MIT
+Keywords: valve steam steamid api webapi steamcommunity
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Natural Language :: English
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.7
+License-File: LICENSE
+Requires-Dist: pycryptodomex>=3.7.0
+Requires-Dist: requests>=2.9.1
+Requires-Dist: urllib3<2
+Requires-Dist: vdf==4.0
+Requires-Dist: cachetools>=3.0.0
+Provides-Extra: client
+Requires-Dist: gevent>=1.3.0; extra == "client"
+Requires-Dist: protobuf~=3.0; extra == "client"
+Requires-Dist: gevent-eventemitter~=2.1; extra == "client"
+Requires-Dist: wsproto~=1.2.0; extra == "client"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+A python module for interacting with various parts of Steam_.
+
+A fork of `ValvePython/steam <https://github.com/ValvePython/steam>`_, which has apparently been abandoned.
+
+Supports Python ``3.6+``.
+
+Documentation (**WARNING** - out of date): http://steam.readthedocs.io/en/stable/
+
+Features
+--------
+
+* `SteamClient <http://steam.readthedocs.io/en/stable/api/steam.client.html>`_ - communication with the steam network based on ``gevent``.
+* `CDNClient <http://steam.readthedocs.io/en/stable/api/steam.client.cdn.html>`_ - access to Steam content depots
+* `WebAuth <http://steam.readthedocs.io/en/stable/api/steam.webauth.html>`_ - authentication for access to ``store.steampowered.com`` and ``steamcommunity.com``
+* `WebAPI <http://steam.readthedocs.io/en/stable/api/steam.webapi.html>`_ - simple API for Steam's Web API with automatic population of interfaces
+* `SteamAuthenticator <http://steam.readthedocs.io/en/stable/api/steam.guard.html>`_ - enable/disable/manage two factor authentication for Steam accounts
+* `SteamID <http://steam.readthedocs.io/en/stable/api/steam.steamid.html>`_  - convert between the various ID representations with ease
+* `Master Server Query Protocol <https://steam.readthedocs.io/en/stable/api/steam.game_servers.html>`_ - query masters servers directly or via ``SteamClient``
+
+Checkout the `User guide <http://steam.readthedocs.io/en/stable/user_guide.html>`_ for examples,
+or the `API Reference <http://steam.readthedocs.io/en/stable/api/steam.html>`_ for details.
+
+For questions, issues or general curiosity visit the repo at `https://github.com/solsticegamestudios/steam <https://github.com/solsticegamestudios/steam>`_.
+
+Like using the command line? Try `steamctl <https://github.com/ValvePython/steamctl>`_ tool
+
+Install
+-------
+
+For system specific details, see `Installation Details <http://steam.readthedocs.io/en/stable/install.html>`_.
+
+**WARNING:** Only ValvePython's (out of date) version is on PyPI.
+
+Installing directly from ``github`` repository:
+
+.. code:: bash
+
+    # cutting edge from master
+    pip install "git+https://github.com/solsticegamestudios/steam#egg=steam"
+
+    # specific version tag (e.g. v1.0.0)
+    pip install "git+https://github.com/solsticegamestudios/steam@v1.0.0#egg=steam[client]"
+    # without SteamClient extras
+    pip install "git+https://github.com/solsticegamestudios/steam@v1.0.0#egg=steam"
+
+Vagrant
+-------
+
+The repo includes a `Vagrantfile` to setup environment for experimentation and development.
+We assume you've already have ``vagrant`` and ``virtualbox`` set up.
+The VM is ``Ubuntu 16.04`` with all necessary packages installed, and virtualenv for ``python2`` and ``python3``.
+
+
+.. code:: bash
+
+    vagrant up    # spin the VM and let it setup
+    vagrant ssh
+    # for python2
+    $ source venv2/bin/activate
+    # for python3
+    $ source venv3/bin/activate
+
+
+
+Local Testing
+-------------
+
+To run the test suite with the current ``python``, use
+
+.. code:: bash
+
+    make test
+
+To run for specific version, setup a virtual environment
+
+.. code:: bash
+
+    virtualenv -p python3 py3
+    source py3/bin/active
+    pip install -r requirements.txt
+    make test
+
+
+.. _Steam: https://store.steampowered.com/

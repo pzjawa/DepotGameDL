@@ -1,0 +1,2 @@
+SteamFix64.dll
+EpicFix64.dll

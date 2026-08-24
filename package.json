@@ -1,0 +1,59 @@
+{
+	"name": "DepotGameDL",
+	"type": "module",
+	"version": "1.0.0",
+	"private": true,
+	"packageManager": "pnpm@11.22.0",
+	"description": "Starter template for Nuxt 4 and Tauri 2",
+	"author": "pzjawa",
+	"license": "MIT",
+	"scripts": {
+		"dev": "nuxt dev",
+		"generate": "nuxt generate",
+		"postinstall": "nuxt prepare",
+		"lint": "eslint . --fix",
+		"bump": "bumpp",
+		"tauri": "tauri",
+		"tauri:dev": "npx tsx scripts/tauri-dev.ts",
+		"tauri:build": "tauri build",
+		"tauri:build:debug": "tauri build --debug"
+	},
+	"dependencies": {
+		"@iconify-json/tabler": "^1.2.38",
+		"@nuxt/ui": "^4.10.0",
+		"@tauri-apps/plugin-fs": "^2.5.1",
+		"@tauri-apps/plugin-notification": "^2.3.3",
+		"@tauri-apps/plugin-os": "^2.3.2",
+		"@tauri-apps/plugin-process": "^2.3.1",
+		"@tauri-apps/plugin-store": "^2.4.4",
+		"@tauri-apps/plugin-updater": "^2.10.1",
+		"morphicons": "^1.7.0",
+		"nuxt": "^4.5.2",
+		"vue": "^3.5.40",
+		"vue-router": "^5.2.0",
+		"zod": "^4.4.3"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^9.3.0",
+		"@iconify-json/fluent": "^1.2.56",
+		"@nuxt/cli": "^3.37.0",
+		"@nuxt/eslint": "^1.16.0",
+		"@tauri-apps/api": "^2.11.1",
+		"@tauri-apps/cli": "^2.11.4",
+		"@tauri-apps/plugin-dialog": "^2.7.2",
+		"@tauri-apps/plugin-shell": "^2.3.5",
+		"@types/node": "^26.2.0",
+		"@unocss/eslint-plugin": "^66.8.0",
+		"@vueuse/core": "^14.4.0",
+		"@vueuse/nuxt": "^14.4.0",
+		"bumpp": "^12.2.1",
+		"eslint": "^10.8.1",
+		"nuxt-svgo": "^5.3.0",
+		"typescript": "^6.0.3"
+	},
+	"trustedDependencies": [
+		"@parcel/watcher",
+		"@tailwindcss/oxide",
+		"unrs-resolver"
+	]
+}
