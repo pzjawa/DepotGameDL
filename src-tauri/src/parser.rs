@@ -87,11 +87,6 @@ pub fn parse_lua(content: &str) -> Option<GameInfo> {
         file_path: None,
     };
 
-    let re_appid = Regex::new(r"主游戏APPID[：:]\s*(\d+)").unwrap();
-    if let Some(caps) = re_appid.captures(content) {
-        info.appid = caps[1].parse().ok();
-    }
-
     let re_depot = Regex::new(r#"addappid\((\d+),\s*\d+,\s*"([^"]*)"\)([^\r\n]*)"#).unwrap();
     let mut seen = std::collections::HashSet::new();
     for cap in re_depot.captures_iter(content) {
