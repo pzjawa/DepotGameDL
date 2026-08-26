@@ -29,7 +29,7 @@
 						class="grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 select-none rounded-lg bg-neutral-100 p-3 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
 						@click="openRepo"
 					>
-						<UIcon name="i-line-md:github" class="size-5 text-neutral-700 dark:text-neutral-300" />
+						<UIcon name="i-tabler:brand-github" class="size-5 text-neutral-700 dark:text-neutral-300" />
 						<span class="text-left text-sm text-neutral-800 dark:text-neutral-200">项目地址</span>
 						<UIcon
 							name="i-fluent:chevron-right-20-regular"
