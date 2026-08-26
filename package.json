@@ -12,7 +12,7 @@
 		"generate": "nuxt generate",
 		"postinstall": "nuxt prepare",
 		"lint": "eslint . --fix",
-		"bump": "bumpp",
+		"bump": "bumpp && cd src-tauri && cargo check",
 		"tauri": "tauri",
 		"tauri:dev": "npx tsx scripts/tauri-dev.ts",
 		"tauri:build": "tauri build",
