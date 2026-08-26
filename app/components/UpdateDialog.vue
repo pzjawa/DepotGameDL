@@ -23,16 +23,18 @@
 		</template>
 
 		<template #footer>
-			<div class="grid w-full auto-cols-max grid-flow-col justify-end gap-2">
-				<UButton color="neutral" variant="ghost" :disabled="downloading" @click="remindLaterSession">
-					本次不再提醒
-				</UButton>
+			<div class="grid w-full auto-cols-max grid-flow-col items-center justify-between gap-2">
 				<UButton color="neutral" variant="ghost" :disabled="downloading" @click="skipVersion">
 					跳过这个版本
 				</UButton>
-				<UButton color="primary" :disabled="downloading" @click="installUpdate">
-					立即更新
-				</UButton>
+				<div class="grid auto-cols-max grid-flow-col items-center gap-2">
+					<UButton color="neutral" variant="ghost" :disabled="downloading" @click="remindLaterSession">
+						本次不再提醒
+					</UButton>
+					<UButton color="primary" :disabled="downloading" @click="installUpdate">
+						立即更新
+					</UButton>
+				</div>
 			</div>
 		</template>
 	</UModal>
