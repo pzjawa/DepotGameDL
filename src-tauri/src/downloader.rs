@@ -6,6 +6,7 @@ use tokio::io::{AsyncReadExt, BufReader};
 use tokio::process::Command;
 
 static PROCESS_PID: Mutex<Option<u32>> = Mutex::new(None);
+static DOWNLOAD_CANCELLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 pub(crate) fn cache_root(app_handle: &AppHandle) -> PathBuf {
     static CACHE: OnceLock<PathBuf> = OnceLock::new();
@@ -34,6 +35,8 @@ fn is_c_drive(path: &Path) -> bool {
 }
 
 fn kill_download_process() {
+    DOWNLOAD_CANCELLED.store(true, std::sync::atomic::Ordering::Relaxed);
+
     let pid = {
         let guard = PROCESS_PID.lock().unwrap();
         guard.clone()
@@ -83,7 +86,12 @@ fn depotdownloader_path(app_handle: &AppHandle) -> PathBuf {
         .join("DepotDownloader.exe")
 }
 
-async fn stream_output<R: AsyncReadExt + Unpin>(reader: R, emitter: AppHandle) {
+async fn stream_output<R: AsyncReadExt + Unpin>(
+    reader: R,
+    emitter: AppHandle,
+    host: &'static str,
+    node_announced: std::sync::Arc<std::sync::atomic::AtomicBool>,
+) {
     let mut reader = BufReader::new(reader);
     let mut line = String::new();
     let mut byte = [0u8; 1];
@@ -95,6 +103,7 @@ async fn stream_output<R: AsyncReadExt + Unpin>(reader: R, emitter: AppHandle) {
                 if ch == '\r' || ch == '\n' {
                     let trimmed = line.trim().to_string();
                     handle_line(&trimmed, &emitter);
+                    announce_node(&trimmed, &emitter, host, &node_announced);
                     line.clear();
                 } else {
                     line.push(ch);
@@ -105,6 +114,19 @@ async fn stream_output<R: AsyncReadExt + Unpin>(reader: R, emitter: AppHandle) {
     }
     let trimmed = line.trim().to_string();
     handle_line(&trimmed, &emitter);
+}
+
+fn announce_node(
+    line: &str,
+    emitter: &AppHandle,
+    host: &'static str,
+    announced: &std::sync::atomic::AtomicBool,
+) {
+    if line.contains("%|")
+        && !announced.swap(true, std::sync::atomic::Ordering::Relaxed)
+    {
+        let _ = emitter.emit("download-node", host);
+    }
 }
 
 fn handle_line(line: &str, emitter: &AppHandle) {
@@ -130,9 +152,84 @@ fn extract_depot_id_from_completed(line: &str) -> Option<u32> {
     digits.parse::<u32>().ok()
 }
 
+#[cfg(target_os = "windows")]
+fn system_is_zh_cn() -> bool {
+    unsafe {
+        use windows_sys::Win32::Globalization::GetUserDefaultLCID;
+        GetUserDefaultLCID() == 0x0804
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn system_is_zh_cn() -> bool {
+    std::env::var("LANG")
+        .or_else(|_| std::env::var("LC_ALL"))
+        .map(|v| v.starts_with("zh_CN"))
+        .unwrap_or(false)
+}
+
+async fn run_once(
+    exe: &Path,
+    working_dir: &Path,
+    args: &[&str],
+    app_handle: &AppHandle,
+    host: &'static str,
+) -> i32 {
+    let mut cmd = Command::new(exe);
+    cmd.args(args)
+        .current_dir(working_dir)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .kill_on_drop(true);
+
+    #[cfg(target_os = "windows")]
+    cmd.creation_flags(0x08000000);
+
+    let mut child = match cmd.spawn() {
+        Ok(c) => c,
+        Err(e) => {
+            let _ = app_handle.emit("download-log", format!("启动进程失败: {}", e));
+            return 1;
+        }
+    };
+
+    let pid = child.id().unwrap_or(0);
+
+    {
+        let mut guard = PROCESS_PID.lock().unwrap();
+        *guard = Some(pid);
+    }
+
+    let stdout = child.stdout.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
+
+    let node_announced = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+
+    let handle_stdout = app_handle.clone();
+    let announce_stdout = std::sync::Arc::clone(&node_announced);
+    tokio::spawn(async move { stream_output(stdout, handle_stdout, host, announce_stdout).await });
+
+    let handle_stderr = app_handle.clone();
+    let announce_stderr = std::sync::Arc::clone(&node_announced);
+    tokio::spawn(async move { stream_output(stderr, handle_stderr, host, announce_stderr).await });
+
+    let status = child.wait().await;
+    let exit_code = status.map(|s| s.code().unwrap_or(1)).unwrap_or(1);
+
+    {
+        let mut guard = PROCESS_PID.lock().unwrap();
+        if *guard == Some(pid) {
+            *guard = None;
+        }
+    }
+
+    exit_code
+}
+
 #[tauri::command]
 pub async fn start_download(app_handle: AppHandle, download_path: String) -> Result<(), String> {
     kill_download_process();
+    DOWNLOAD_CANCELLED.store(false, std::sync::atomic::Ordering::Relaxed);
 
     let depot_dir = depot_path(&app_handle);
 
@@ -155,60 +252,39 @@ pub async fn start_download(app_handle: AppHandle, download_path: String) -> Res
     }
 
     let working_dir = depot_dir.clone();
-    let args = [
-        "-l",
-        "-u",
-        "China",
-        "--use-http",
-        "-o",
-        &download_path,
-        "app",
-        "-p",
-        depot_dir.to_str().unwrap(),
-    ];
 
-    let mut cmd = Command::new(&exe);
-    cmd.args(&args)
-        .current_dir(working_dir)
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .kill_on_drop(true);
-
-    #[cfg(target_os = "windows")]
-    cmd.creation_flags(0x08000000);
-
-    let mut child = cmd.spawn().map_err(|e| format!("启动进程失败: {}", e))?;
-
-    let pid = child.id().unwrap_or(0);
-
-    {
-        let mut guard = PROCESS_PID.lock().unwrap();
-        *guard = Some(pid);
-    }
-
-    let stdout = child.stdout.take().unwrap();
-    let stderr = child.stderr.take().unwrap();
-
-    let handle_stdout = app_handle.clone();
-    tokio::spawn(async move { stream_output(stdout, handle_stdout).await });
-
-    let handle_stderr = app_handle.clone();
-    tokio::spawn(async move { stream_output(stderr, handle_stderr).await });
-
-    let handle_finish = app_handle.clone();
-    let my_pid = pid;
+    let handle_task = app_handle.clone();
     tokio::spawn(async move {
-        let status = child.wait().await;
-        let exit_code = status.map(|s| s.code().unwrap_or(1)).unwrap_or(1);
+        let mut hosts: Vec<&str> = Vec::new();
+        if system_is_zh_cn() {
+            hosts.push("China");
+        }
+        hosts.push("Public");
 
-        {
-            let mut guard = PROCESS_PID.lock().unwrap();
-            if *guard == Some(my_pid) {
-                *guard = None;
+        let depot_dir_str = working_dir.to_string_lossy().to_string();
+        let mut exit_code = 1;
+
+        for &host in hosts.iter() {
+            let args: Vec<String> = vec![
+                "-l".to_string(),
+                "-u".to_string(),
+                host.to_string(),
+                "-o".to_string(),
+                download_path.clone(),
+                "app".to_string(),
+                "-p".to_string(),
+                depot_dir_str.clone(),
+            ];
+
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            exit_code = run_once(&exe, &working_dir, &arg_refs, &handle_task, host).await;
+
+            if exit_code == 0 || DOWNLOAD_CANCELLED.load(std::sync::atomic::Ordering::Relaxed) {
+                break;
             }
         }
 
-        let _ = handle_finish.emit(
+        let _ = handle_task.emit(
             "download-finished",
             serde_json::json!({ "exit_code": exit_code }),
         );

@@ -247,6 +247,10 @@ export function initDepotGameDL() {
 		saveGameInfoToCache();
 	});
 
+	bind("download-node", (event: any) => {
+		showToast(`当前节点：${event.payload}`);
+	});
+
 	bind("download-finished", (event: any) => {
 		const code = event.payload.exit_code as number;
 		if (pausedByUser.value) {
