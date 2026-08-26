@@ -13,6 +13,12 @@ export default defineNuxtConfig({
 	ui: {
 		fonts: false
 	},
+	icon: {
+		provider: "none",
+		clientBundle: {
+			scan: true
+		}
+	},
 	app: {
 		head: {
 			title: "pzjawa",

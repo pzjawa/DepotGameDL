@@ -36,6 +36,7 @@
 	"devDependencies": {
 		"@antfu/eslint-config": "^9.3.0",
 		"@iconify-json/fluent": "^1.2.56",
+		"@iconify-json/lucide": "^1.2.125",
 		"@nuxt/cli": "^3.37.0",
 		"@nuxt/eslint": "^1.16.0",
 		"@tauri-apps/api": "^2.11.1",

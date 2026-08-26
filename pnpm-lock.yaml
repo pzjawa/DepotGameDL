@@ -54,6 +54,9 @@ importers:
       '@iconify-json/fluent':
         specifier: ^1.2.56
         version: 1.2.56
+      '@iconify-json/lucide':
+        specifier: ^1.2.125
+        version: 1.2.125
       '@nuxt/cli':
         specifier: ^3.37.0
         version: 3.37.0(@nuxt/schema@4.5.2)(cac@7.0.0)(magicast@0.5.4)(supports-color@10.2.2)
@@ -808,6 +811,9 @@ packages:
 
   '@iconify-json/fluent@1.2.56':
     resolution: {integrity: sha512-WqP0v2J5qs/VJcCaRWCgCvdOwq+vV7OPENlJVczc1aUXCfBtLdl/A4ohYlJEopAUAfVyTKadj2kYNODJapRBNw==}
+
+  '@iconify-json/lucide@1.2.125':
+    resolution: {integrity: sha512-tOCk1QKMtKnCfPAgZRHgjRkQTP7wF5IO+iPKvvp8vxGZYPkSLhx4HTV3Ng0pIZ3wNWrS6kVpHkunJ1dc19L1og==}
 
   '@iconify-json/tabler@1.2.38':
     resolution: {integrity: sha512-9v6ooRU/bKOK/Whv4w2aiK5gBnfCV9Ei+uD1iDDeLu2b+EnF3G3ZKkRKWEOOLG8bJyfKn6XEia6gUQ9oO7cF+Q==}
@@ -6351,6 +6357,10 @@ snapshots:
   '@humanwhocodes/retry@0.4.3': {}
 
   '@iconify-json/fluent@1.2.56':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/lucide@1.2.125':
     dependencies:
       '@iconify/types': 2.0.0
 
