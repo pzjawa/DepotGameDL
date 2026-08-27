@@ -30,7 +30,7 @@
 						@click="openRepo"
 					>
 						<UIcon name="i-tabler:brand-github" class="size-5 text-neutral-700 dark:text-neutral-300" />
-						<span class="text-left text-sm text-neutral-800 dark:text-neutral-200">项目地址</span>
+						<span class="text-left text-sm text-neutral-800 dark:text-neutral-200">{{ t('about.projectRepo') }}</span>
 						<UIcon
 							name="i-fluent:chevron-right-20-regular"
 							class="size-5 justify-self-end text-neutral-400 dark:text-neutral-500"
@@ -46,11 +46,11 @@
 							class="size-5 text-neutral-700 dark:text-neutral-300"
 							:class="{ 'animate-spin': checking }"
 						/>
-						<span class="text-sm text-neutral-800 dark:text-neutral-200">检查更新</span>
+						<span class="text-sm text-neutral-800 dark:text-neutral-200">{{ t('about.checkUpdate') }}</span>
 					</button>
 				</div>
 
-				<span class="mb-1 mt-5 w-full text-left text-sm font-semibold text-neutral-900 dark:text-white">致谢</span>
+				<span class="mb-1 mt-5 w-full text-left text-sm font-semibold text-neutral-900 dark:text-white">{{ t('about.credits') }}</span>
 
 				<button
 					v-for="(p, i) in refProjects"
@@ -88,6 +88,7 @@
 	import { invoke } from "@tauri-apps/api/core";
 	import { open } from "@tauri-apps/plugin-shell";
 	import { onMounted, ref } from "vue";
+	import { t } from "~/locales";
 
 	interface AppMeta {
 		name: string
@@ -105,7 +106,7 @@
 	async function onCheckUpdate() {
 		const result = await checkUpdate();
 		if (result === "latest") {
-			toast.add({ title: "当前已是最新版本", close: false, progress: false, duration: 3000 });
+			toast.add({ title: t('about.toastAlreadyLatest'), close: false, progress: false, duration: 3000 });
 		}
 	}
 

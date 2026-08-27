@@ -8,12 +8,13 @@
       "digestAlgorithm": "sha256",
       "timestampUrl": "",
       "wix": {
-        "language": "zh-CN",
+        "language": ["zh-CN", "en-US"],
         "template": "./windows/main.wxs"
       },
       "nsis": {
         "template": "./windows/installer.nsi",
-        "languages": ["SimpChinese"],
+        "languages": ["SimpChinese", "English"],
+        "displayLanguageSelector": false,
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico"
       }

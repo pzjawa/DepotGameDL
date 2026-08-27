@@ -1,16 +1,16 @@
 <template>
 	<UModal
 		v-model:open="resumeDialogOpen"
-		title="下载缓存"
-		description="是否使用上次下载的缓存继续？"
+		:title="t('resumeDialog.title')"
+		:description="t('resumeDialog.description')"
 	>
 		<template #footer>
 			<div class="grid w-full auto-cols-max grid-flow-col justify-end gap-2">
 				<UButton color="neutral" variant="ghost" @click="discardResume">
-					清理缓存
+					{{ t('resumeDialog.cleanCache') }}
 				</UButton>
 				<UButton color="primary" @click="confirmResume">
-					继续下载
+					{{ t('resumeDialog.continueDownload') }}
 				</UButton>
 			</div>
 		</template>
@@ -18,5 +18,6 @@
 </template>
 
 <script setup lang="ts">
+	import { t } from "~/locales";
 	const { resumeDialogOpen, confirmResume, discardResume } = useDepotGameDL();
 </script>

@@ -1,4 +1,5 @@
 use crate::downloader::depot_path;
+use crate::locales;
 use regex::Regex;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -169,7 +170,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                     game_name: String::new(),
                     has_previous_cache: false,
                     has_local_manifests: false,
-                    message: format!("无法读取文件: {}", e),
+                    message: format!("{}: {}", locales::strings().read_file_failed, e),
                 };
             }
         },
@@ -183,7 +184,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                         game_name: String::new(),
                         has_previous_cache: false,
                         has_local_manifests: false,
-                        message: format!("无法打开 zip: {}", e),
+                        message: format!("{}: {}", locales::strings().open_zip_failed, e),
                     };
                 }
             };
@@ -196,7 +197,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                         game_name: String::new(),
                         has_previous_cache: false,
                         has_local_manifests: false,
-                        message: format!("无法解析 zip: {}", e),
+                        message: format!("{}: {}", locales::strings().parse_zip_failed, e),
                     };
                 }
             };
@@ -231,7 +232,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                 game_name: String::new(),
                 has_previous_cache: false,
                 has_local_manifests: false,
-                message: "不支持的格式".to_string(),
+                message: locales::strings().unsupported_format.to_string(),
             };
         }
     }
@@ -245,7 +246,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                 game_name: String::new(),
                 has_previous_cache: false,
                 has_local_manifests: false,
-                message: "未找到 lua 文件".to_string(),
+                message: locales::strings().lua_not_found.to_string(),
             };
         }
     };
@@ -259,7 +260,7 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
                 game_name: String::new(),
                 has_previous_cache: false,
                 has_local_manifests: false,
-                message: "无法解析清单内容".to_string(),
+                message: locales::strings().parse_manifest_content_failed.to_string(),
             };
         }
     };
@@ -282,6 +283,6 @@ pub async fn import_lua(app_handle: AppHandle, file_path: String) -> ImportResul
         game_name,
         has_previous_cache: has_cache,
         has_local_manifests,
-        message: format!("清单已就绪，AppID: {:?}", appid),
+        message: format!("{}", locales::strings().manifest_ready),
     }
 }

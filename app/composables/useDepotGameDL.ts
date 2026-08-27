@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { computed, reactive, ref } from "vue";
+import { t } from "~/locales";
 
 let toast: ReturnType<typeof useToast> | null = null;
 
@@ -210,7 +211,7 @@ export function initDepotGameDL() {
 		manifestProgress.value = payload;
 
 		if (toast) {
-			const title = `获取清单 [${payload.current}/${payload.total}]`;
+			const title = t('toasts.manifestProgress', { current: payload.current, total: payload.total });
 			if (manifestToastId === null) {
 				manifestToastId = toast.add({
 					title,
@@ -244,7 +245,7 @@ export function initDepotGameDL() {
 	});
 
 	bind("download-node", (event: any) => {
-		showToast(`当前节点：${event.payload}`);
+		showToast(t('toasts.currentNode', { node: event.payload }));
 	});
 
 	bind("download-finished", (event: any) => {
@@ -264,7 +265,7 @@ export function initDepotGameDL() {
 				progress: 100,
 				progress_text: "completed"
 			}).catch(() => {});
-			showToast("下载完毕");
+			showToast(t('toasts.downloadFinished'));
 			patchDialogOpen.value = true;
 		} else {
 			isDownloading.value = false;
@@ -320,7 +321,7 @@ async function confirmResume() {
 	if (gameName.value && currentInfo.value && preparedDepotIds.value.length > 0) {
 		stepStatus.step2 = "ok";
 		downloadStarted.value = true;
-		showToast("继续上次下载");
+		showToast(t('toasts.resumeLastDownload'));
 		const total = preparedDepotIds.value.length;
 		manifestProgress.value = {
 			current: total,
@@ -336,9 +337,9 @@ async function discardResume() {
 	resumeDialogOpen.value = false;
 	try {
 		await invoke("clean_cache_cmd");
-		showToast("缓存已清理");
+		showToast(t('toasts.cacheCleaned'));
 	} catch (e) {
-		showToast(`清理缓存失败: ${e}`);
+		showToast(t('toasts.cacheCleanFailed', { error: String(e) }));
 	}
 	resumeMode = false;
 	downloadStarted.value = false;
@@ -414,7 +415,7 @@ async function setThemeMode(mode: string) {
 async function selectDownloadDir() {
 	const selected = await openDialog({
 		directory: true,
-		title: "选择下载目录",
+		title: t('index.selectDownloadDir'),
 		defaultPath: downloadDir.value || defaultDownloadDir.value || undefined
 	});
 	if (selected) {
@@ -427,7 +428,7 @@ async function importKey() {
 	if (isDownloading.value) return;
 	const selected = await openDialog({
 		multiple: false,
-		filters: [{ name: "清单文件", extensions: ["lua", "zip", "7z", "rar"] }]
+		filters: [{ name: t('toasts.manifestFilterName'), extensions: ["lua", "zip", "7z", "rar"] }]
 	});
 	if (!selected) return;
 	const filePath = selected as string;
@@ -435,12 +436,12 @@ async function importKey() {
 	manifestProgress.value = null;
 	clearManifestToast();
 
-	showToast("正在解析清单");
+	showToast(t('toasts.parsingManifest'));
 
 	try {
 		const result: any = await invoke("import_lua", { filePath });
 		if (!result.success) {
-			showToast(result.message || "清单解析失败");
+			showToast(result.message || t('toasts.parseManifestFailed'));
 			stepStatus.step2 = "fail";
 			return;
 		}
@@ -459,7 +460,7 @@ async function importKey() {
 			};
 			manifestDialogOpen.value = true;
 		} else {
-			showToast("在线获取清单");
+			showToast(t('toasts.fetchingOnlineManifest'));
 			manifestCancelled = false;
 			preparingManifest.value = true;
 			try {
@@ -479,7 +480,7 @@ async function importKey() {
 					clearManifestToast();
 					return;
 				}
-				showToast(`获取清单失败: ${e}`);
+				showToast(t('toasts.fetchManifestFailed', { error: String(e) }));
 				stepStatus.step2 = "fail";
 				manifestProgress.value = null;
 				clearManifestToast();
@@ -488,7 +489,7 @@ async function importKey() {
 			}
 		}
 	} catch {
-		showToast("清单解析失败");
+		showToast(t('toasts.parseManifestFailed'));
 		stepStatus.step2 = "fail";
 	}
 }
@@ -515,7 +516,7 @@ async function applyManifest(useLocal: boolean) {
 			clearManifestToast();
 			return;
 		}
-		showToast(useLocal ? `本地清单无效: ${e}` : `失败: ${e}`);
+		showToast(useLocal ? t('toasts.localManifestInvalid', { error: String(e) }) : t('toasts.actionFailed', { error: String(e) }));
 		stepStatus.step2 = "fail";
 		manifestProgress.value = null;
 		clearManifestToast();
@@ -551,17 +552,17 @@ async function startDownload() {
 	if (isDownloading.value) return;
 
 	if (resumeMode && !currentInfo.value) {
-		showToast("缓存不完整，请重新导入清单");
+		showToast(t('toasts.cacheIncomplete'));
 		return;
 	}
 
 	if (!gameName.value || !currentInfo.value) {
-		showToast("请先导入清单文件");
+		showToast(t('toasts.importManifestFirst'));
 		return;
 	}
 
 	if (preparedDepotIds.value.length > 0 && preparedDepotIds.value.every((id) => completedDepots.value.has(id))) {
-		showToast("下载已完成");
+		showToast(t('toasts.downloadAlreadyDone'));
 		return;
 	}
 
@@ -580,7 +581,7 @@ async function startDownload() {
 		downloadStarted.value = true;
 	} catch (e) {
 		isDownloading.value = false;
-		showToast(`启动下载失败: ${e}`);
+		showToast(t('toasts.startDownloadFailed', { error: String(e) }));
 	}
 }
 
@@ -601,12 +602,12 @@ async function confirmAddPatch() {
 	const gameDir = downloadPath.value;
 	const appId = currentInfo.value?.appid;
 	if (!gameDir || !appId) {
-		showToast("无法添加补丁");
+		showToast(t('toasts.cannotAddPatch'));
 		return;
 	}
 	try {
 		await invoke("add_local_patch", { gameDir, appId: String(appId) });
-		showToast("补丁已添加");
+		showToast(t('toasts.patchAdded'));
 	} catch (e) {
 		showToast(String(e));
 	}
@@ -641,9 +642,9 @@ async function cleanCache() {
 
 	try {
 		await invoke("clean_cache_cmd", { downloadPath: pathToClean });
-		showToast("缓存已清理");
+		showToast(t('toasts.cacheCleaned'));
 	} catch (e) {
-		showToast(`清理缓存失败: ${e}`);
+		showToast(t('toasts.cacheCleanFailed', { error: String(e) }));
 	}
 }
 

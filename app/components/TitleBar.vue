@@ -13,7 +13,7 @@
 		<div class="grid auto-cols-max grid-flow-col items-center gap-2">
 			<button
 				class="group grid size-5 place-items-center rounded-full bg-[#febc2e] text-black/60 transition-all duration-200"
-				title="最小化"
+				:title="t('titleBar.minimize')"
 				@click="minimizeWindow"
 			>
 				<UIcon
@@ -23,7 +23,7 @@
 			</button>
 			<button
 				class="group grid size-5 place-items-center rounded-full bg-[#28c840] text-black/60 transition-all duration-200"
-				title="最大化"
+				:title="t('titleBar.maximize')"
 				@click="toggleMaximize"
 			>
 				<UIcon
@@ -33,7 +33,7 @@
 			</button>
 			<button
 				class="group grid size-5 place-items-center rounded-full bg-[#ff5f57] text-black/60 transition-all duration-200"
-				title="关闭"
+				:title="t('titleBar.close')"
 				@click="closeWindow"
 			>
 				<UIcon
@@ -49,6 +49,7 @@
 	import { invoke } from "@tauri-apps/api/core";
 	import { getCurrentWindow } from "@tauri-apps/api/window";
 	import { onMounted, ref } from "vue";
+	import { t } from "~/locales";
 
 	interface AppMeta {
 		name: string

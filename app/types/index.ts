@@ -8,6 +8,4 @@ export interface LuaInfo {
 	depots: DepotInfo[]
 	dlc_depots: number[]
 	tokens: Record<number, string>
-	missing_keys: number[]
-	dlc_only: number[]
 }

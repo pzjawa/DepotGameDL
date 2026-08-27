@@ -1,5 +1,5 @@
 <template>
-	<UModal v-model:open="updateDialogOpen" title="发现新版本" :ui="{ overlay: 'z-100', content: 'z-100' }">
+	<UModal v-model:open="updateDialogOpen" :title="t('updateDialog.title')" :ui="{ overlay: 'z-100', content: 'z-100' }">
 		<template #body>
 			<div class="grid gap-3">
 				<div class="grid auto-cols-max grid-flow-col items-center gap-2">
@@ -17,7 +17,7 @@
 
 				<div v-if="downloading" class="grid gap-1.5">
 					<UProgress v-model="downloadProgress" />
-					<span class="text-xs text-neutral-500 dark:text-neutral-400">正在下载更新… {{ downloadProgress }}%</span>
+					<span class="text-xs text-neutral-500 dark:text-neutral-400">{{ t('updateDialog.downloading', { progress: downloadProgress }) }}</span>
 				</div>
 			</div>
 		</template>
@@ -25,14 +25,14 @@
 		<template #footer>
 			<div class="grid w-full auto-cols-max grid-flow-col items-center justify-between gap-2">
 				<UButton color="neutral" variant="ghost" :disabled="downloading" @click="skipVersion">
-					跳过这个版本
+					{{ t('updateDialog.skipVersion') }}
 				</UButton>
 				<div class="grid auto-cols-max grid-flow-col items-center gap-2">
 					<UButton color="neutral" variant="ghost" :disabled="downloading" @click="remindLaterSession">
-						本次不再提醒
+						{{ t('updateDialog.remindLater') }}
 					</UButton>
 					<UButton color="primary" :disabled="downloading" @click="installUpdate">
-						立即更新
+						{{ t('updateDialog.updateNow') }}
 					</UButton>
 				</div>
 			</div>
@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+	import { t } from "~/locales";
 	const {
 		downloading,
 		downloadProgress,

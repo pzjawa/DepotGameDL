@@ -4,7 +4,7 @@
 			:color="isDownloading ? 'neutral' : 'primary'"
 			square
 			:disabled="preparingManifest"
-			:title="preparingManifest ? '清单获取中' : ''"
+			:title="preparingManifest ? t('downloadBar.fetchingManifest') : ''"
 			@click="toggleDownload"
 		>
 			<MorphIcon :icon="isDownloading ? Pause : Play" :size="20" spring="snappy" />
@@ -52,6 +52,7 @@
 	import { svgToIcon } from "morphicons/adapters";
 	import { MorphIcon } from "morphicons/vue";
 	import { computed, ref, watch } from "vue";
+	import { t } from "~/locales";
 
 	const Play = svgToIcon(tabler.icons["player-play"]!.body);
 	const Pause = svgToIcon(tabler.icons["player-pause"]!.body);

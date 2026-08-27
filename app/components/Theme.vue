@@ -1,13 +1,13 @@
 <template>
 	<UPopover>
-		<UButton color="neutral" variant="outline" size="sm" square aria-label="主题设置">
+		<UButton color="neutral" variant="outline" size="sm" square :aria-label="t('theme.settings')">
 			<MorphIcon :icon="themeIcons[themeMode] ?? Palette" :size="16" spring="snappy" />
 		</UButton>
 
 		<template #content>
 			<div class="w-60 bg-(--surface) rounded-lg p-3">
 				<div class="mb-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-					主题
+					{{ t('theme.theme') }}
 				</div>
 				<div class="grid grid-cols-3 rounded bg-neutral-100 p-1 dark:bg-neutral-800">
 					<button
@@ -21,12 +21,12 @@
 						"
 						@click="setThemeMode(m.value)"
 					>
-						{{ m.label }}
+						{{ t(m.labelKey) }}
 					</button>
 				</div>
 
 				<div class="mt-4 mb-1.5 text-xs text-neutral-500 dark:text-neutral-400">
-					样式
+					{{ t('theme.style') }}
 				</div>
 				<div class="grid grid-cols-3 rounded bg-neutral-100 p-1 dark:bg-neutral-800">
 					<button
@@ -52,6 +52,7 @@
 	import { icons as tabler } from "@iconify-json/tabler";
 	import { svgToIcon } from "morphicons/adapters";
 	import { MorphIcon } from "morphicons/vue";
+	import { t } from "~/locales";
 
 	const Palette = svgToIcon(tabler.icons.palette!.body);
 	const themeIcons: Record<string, ReturnType<typeof svgToIcon>> = {
@@ -63,9 +64,9 @@
 	const { themeMode, windowStyle, setThemeMode, setWindowStyle } = useDepotGameDL();
 
 	const themeModes = [
-		{ label: "跟随系统", value: "system" },
-		{ label: "浅色", value: "light" },
-		{ label: "深色", value: "dark" }
+		{ labelKey: "theme.followSystem", value: "system" },
+		{ labelKey: "theme.light", value: "light" },
+		{ labelKey: "theme.dark", value: "dark" }
 	];
 
 	const styles = [

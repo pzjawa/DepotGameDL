@@ -1,4 +1,5 @@
 use crate::downloader::cache_root;
+use crate::locales;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -35,25 +36,25 @@ pub fn add_local_patch(
 ) -> Result<String, String> {
     let src = freetp_path(&app_handle);
     if !src.exists() {
-        return Err(format!("找不到 FreeTP_Patch 资源目录: {}", src.display()));
+        return Err(format!("{}: {}", locales::strings().freetp_resource_dir_not_found, src.display()));
     }
     let dst = Path::new(&game_dir);
     if !dst.exists() || !dst.is_dir() {
-        return Err(format!("游戏目录不存在: {}", game_dir));
+        return Err(format!("{}: {}", locales::strings().game_dir_not_exists, game_dir));
     }
 
-    copy_dir_all(&src, dst).map_err(|e| format!("复制补丁失败: {}", e))?;
+    copy_dir_all(&src, dst).map_err(|e| format!("{}: {}", locales::strings().copy_patch_failed, e))?;
 
     if !app_id.is_empty() {
         let ini = dst.join("SteamFix.ini");
         if ini.exists() {
             let content =
-                fs::read_to_string(&ini).map_err(|e| format!("读取 SteamFix.ini 失败: {}", e))?;
+                fs::read_to_string(&ini).map_err(|e| format!("{}: {}", locales::strings().read_steamfix_ini_failed, e))?;
             let re = regex::Regex::new(r"(?i)RealAppId=\d+")
-                .map_err(|e| format!("正则编译失败: {}", e))?;
+                .map_err(|e| format!("{}: {}", locales::strings().regex_compile_failed, e))?;
             let new_content = re.replace(&content, format!("RealAppId={}", app_id));
             fs::write(&ini, new_content.as_ref())
-                .map_err(|e| format!("写入 SteamFix.ini 失败: {}", e))?;
+                .map_err(|e| format!("{}: {}", locales::strings().write_steamfix_ini_failed, e))?;
         }
     }
 
@@ -74,7 +75,7 @@ const PATCH_ITEMS: &[&str] = &[
 pub fn remove_local_patch(game_dir: String) -> Result<String, String> {
     let base = Path::new(&game_dir);
     if !base.exists() || !base.is_dir() {
-        return Err(format!("游戏目录不存在: {}", game_dir));
+        return Err(format!("{}: {}", locales::strings().game_dir_not_exists, game_dir));
     }
     let mut removed = 0u32;
     for item in PATCH_ITEMS {
@@ -145,26 +146,26 @@ pub fn add_online_patch(
     let src = Path::new(&patch_dir);
     let dst = Path::new(&game_dir);
     if !src.exists() || !src.is_dir() {
-        return Err(format!("补丁目录不存在: {}", patch_dir));
+        return Err(format!("{}: {}", locales::strings().patch_dir_not_exists, patch_dir));
     }
     if !dst.exists() || !dst.is_dir() {
-        return Err(format!("游戏目录不存在: {}", game_dir));
+        return Err(format!("{}: {}", locales::strings().game_dir_not_exists, game_dir));
     }
 
     let cache = patch_cache_dir(&app_handle, &game_dir);
-    fs::create_dir_all(&cache).map_err(|e| format!("创建缓存目录失败: {}", e))?;
+    fs::create_dir_all(&cache).map_err(|e| format!("{}: {}", locales::strings().create_cache_dir_failed, e))?;
 
     let orig_dll = dst.join(DLL_BACKUP_NAME);
     if orig_dll.exists() {
         let backup = cache.join(DLL_BACKUP_NAME);
         if !backup.exists() {
             fs::copy(&orig_dll, &backup)
-                .map_err(|e| format!("备份 steam_api64.dll 失败: {}", e))?;
+                .map_err(|e| format!("{}: {}", locales::strings().backup_steam_api_dll_failed, e))?;
         }
     }
 
     let mut copied: Vec<String> = Vec::new();
-    collect_files(src, src, &mut copied).map_err(|e| format!("扫描补丁目录失败: {}", e))?;
+    collect_files(src, src, &mut copied).map_err(|e| format!("{}: {}", locales::strings().scan_patch_dir_failed, e))?;
     for rel in &copied {
         let from = src.join(rel);
         let to = dst.join(rel);
@@ -172,14 +173,14 @@ pub fn add_online_patch(
             continue;
         }
         if let Some(parent) = to.parent() {
-            fs::create_dir_all(parent).map_err(|e| format!("创建目标目录失败: {}", e))?;
+            fs::create_dir_all(parent).map_err(|e| format!("{}: {}", locales::strings().create_target_dir_failed, e))?;
         }
-        fs::copy(&from, &to).map_err(|e| format!("复制 {} 失败: {}", rel, e))?;
+        fs::copy(&from, &to).map_err(|e| locales::strings().copy_file_failed.replace("{}", rel).replace("{}", &e.to_string()))?;
     }
 
-    let manifest = serde_json::to_string(&copied).map_err(|e| format!("序列化失败: {}", e))?;
+    let manifest = serde_json::to_string(&copied).map_err(|e| format!("{}: {}", locales::strings().serialize_manifest_failed, e))?;
     fs::write(cache.join("copied_files.json"), manifest)
-        .map_err(|e| format!("写入清单失败: {}", e))?;
+        .map_err(|e| format!("{}: {}", locales::strings().write_manifest_failed, e))?;
 
     Ok(format!("{}", copied.len()))
 }
@@ -188,16 +189,16 @@ pub fn add_online_patch(
 pub fn remove_online_patch(app_handle: AppHandle, game_dir: String) -> Result<String, String> {
     let dst = Path::new(&game_dir);
     if !dst.exists() || !dst.is_dir() {
-        return Err(format!("游戏目录不存在: {}", game_dir));
+        return Err(format!("{}: {}", locales::strings().game_dir_not_exists, game_dir));
     }
 
     let cache = patch_cache_dir(&app_handle, &game_dir);
 
     let manifest_path = cache.join("copied_files.json");
     if manifest_path.exists() {
-        let raw = fs::read_to_string(&manifest_path).map_err(|e| format!("读取清单失败: {}", e))?;
+        let raw = fs::read_to_string(&manifest_path).map_err(|e| format!("{}: {}", locales::strings().read_manifest_failed, e))?;
         let copied: Vec<String> =
-            serde_json::from_str(&raw).map_err(|e| format!("解析清单失败: {}", e))?;
+            serde_json::from_str(&raw).map_err(|e| format!("{}: {}", locales::strings().parse_manifest_failed, e))?;
         for rel in &copied {
             let _ = remove_patched_file(dst, rel);
         }
@@ -209,7 +210,7 @@ pub fn remove_online_patch(app_handle: AppHandle, game_dir: String) -> Result<St
         if orig_dll.is_file() {
             let _ = fs::remove_file(&orig_dll);
         }
-        fs::copy(&backup, &orig_dll).map_err(|e| format!("恢复 steam_api64.dll 失败: {}", e))?;
+        fs::copy(&backup, &orig_dll).map_err(|e| format!("{}: {}", locales::strings().restore_steam_api_dll_failed, e))?;
     }
 
     if let Ok(entries) = fs::read_dir(&cache) {

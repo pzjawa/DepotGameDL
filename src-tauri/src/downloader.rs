@@ -1,3 +1,4 @@
+use crate::locales;
 use crate::parser::GameInfo;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
@@ -152,22 +153,6 @@ fn extract_depot_id_from_completed(line: &str) -> Option<u32> {
     digits.parse::<u32>().ok()
 }
 
-#[cfg(target_os = "windows")]
-fn system_is_zh_cn() -> bool {
-    unsafe {
-        use windows_sys::Win32::Globalization::GetUserDefaultLCID;
-        GetUserDefaultLCID() == 0x0804
-    }
-}
-
-#[cfg(not(target_os = "windows"))]
-fn system_is_zh_cn() -> bool {
-    std::env::var("LANG")
-        .or_else(|_| std::env::var("LC_ALL"))
-        .map(|v| v.starts_with("zh_CN"))
-        .unwrap_or(false)
-}
-
 async fn run_once(
     exe: &Path,
     working_dir: &Path,
@@ -188,7 +173,7 @@ async fn run_once(
     let mut child = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => {
-            let _ = app_handle.emit("download-log", format!("启动进程失败: {}", e));
+            let _ = app_handle.emit("download-log", locales::strings().process_start_failed.replace("{}", &e.to_string()));
             return 1;
         }
     };
@@ -240,15 +225,15 @@ pub async fn start_download(app_handle: AppHandle, download_path: String) -> Res
         })
         .unwrap_or(false);
     if !has_manifest {
-        return Err("depot 目录中没有 manifest 文件，请先导入清单并选择版本".into());
+        return Err(locales::strings().no_manifest_in_depot.into());
     }
     if !depot_dir.join("config.vdf").exists() {
-        return Err("depot 目录中没有 config.vdf 文件".into());
+        return Err(locales::strings().no_config_vdf.into());
     }
 
     let exe = depotdownloader_path(&app_handle);
     if !exe.exists() {
-        return Err(format!("找不到 DepotDownloader.exe: {}", exe.display()));
+        return Err(locales::strings().depotdownloader_not_found.replace("{}", &exe.display().to_string()));
     }
 
     let working_dir = depot_dir.clone();
@@ -256,7 +241,7 @@ pub async fn start_download(app_handle: AppHandle, download_path: String) -> Res
     let handle_task = app_handle.clone();
     tokio::spawn(async move {
         let mut hosts: Vec<&str> = Vec::new();
-        if system_is_zh_cn() {
+        if locales::system_is_zh_cn() {
             hosts.push("China");
         }
         hosts.push("Public");

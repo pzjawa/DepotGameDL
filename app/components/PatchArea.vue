@@ -4,7 +4,7 @@
 
 		<div class="grid gap-3 rounded-lg border border-(--surface-border) p-3">
 			<div class="grid grid-cols-[1fr_auto] items-center gap-2">
-				<span class="text-sm font-semibold text-neutral-700 dark:text-neutral-200">联网补丁</span>
+				<span class="text-sm font-semibold text-neutral-700 dark:text-neutral-200">{{ t('patchArea.onlinePatch') }}</span>
 				<div class="grid auto-cols-max grid-flow-col items-center gap-2">
 					<div class="grid auto-cols-max grid-flow-col gap-1 rounded-md bg-neutral-100 p-1 dark:bg-neutral-800">
 						<UButton
@@ -13,7 +13,7 @@
 							:variant="patchMode === 'local' ? 'solid' : 'ghost'"
 							@click="patchMode = 'local'"
 						>
-							本地补丁
+							{{ t('patchArea.localPatchTab') }}
 						</UButton>
 						<UButton
 							size="sm"
@@ -21,7 +21,7 @@
 							:variant="patchMode === 'online' ? 'solid' : 'ghost'"
 							@click="patchMode = 'online'"
 						>
-							在线补丁
+							{{ t('patchArea.onlinePatchTab') }}
 						</UButton>
 					</div>
 					<UButton
@@ -49,7 +49,7 @@
 				<div class="grid grid-cols-[1fr_auto] items-center gap-2">
 					<UInput
 						v-model="steamLink"
-						placeholder="Steam游戏链接或ID"
+						:placeholder="t('patchArea.steamLinkPlaceholder')"
 						class="w-full transition-opacity duration-300"
 						:class="linkDimmed ? 'opacity-50' : 'opacity-100'"
 						@keyup.enter="onLinkSubmit"
@@ -68,7 +68,7 @@
 					/>
 				</div>
 				<div class="grid grid-cols-[1fr_auto] items-center gap-2">
-					<UInput v-model="localGameDir" placeholder="游戏目录" class="w-full" />
+					<UInput v-model="localGameDir" :placeholder="t('patchArea.gameDirPlaceholder')" class="w-full" />
 					<UButton
 						size="sm"
 						color="neutral"
@@ -79,17 +79,17 @@
 				</div>
 				<div class="grid grid-cols-2 gap-2">
 					<UButton color="primary" @click="addPatch">
-						添加补丁
+						{{ t('patchArea.addPatch') }}
 					</UButton>
 					<UButton color="neutral" variant="outline" @click="removePatch">
-						移除补丁
+						{{ t('patchArea.removePatch') }}
 					</UButton>
 				</div>
 			</div>
 
 			<div v-else class="grid gap-2 rounded-lg border border-(--surface-border) p-3">
 				<div class="grid grid-cols-[1fr_auto] items-center gap-2">
-					<UInput v-model="onlinePatchPath" placeholder="补丁文件夹" class="w-full" readonly />
+					<UInput v-model="onlinePatchPath" :placeholder="t('patchArea.patchFolderPlaceholder')" class="w-full" readonly />
 					<UButton
 						size="sm"
 						color="neutral"
@@ -99,7 +99,7 @@
 					/>
 				</div>
 				<div class="grid grid-cols-[1fr_auto] items-center gap-2">
-					<UInput v-model="onlineGameDir" placeholder="游戏目录" class="w-full" readonly />
+					<UInput v-model="onlineGameDir" :placeholder="t('patchArea.gameDirPlaceholder')" class="w-full" readonly />
 					<UButton
 						size="sm"
 						color="neutral"
@@ -108,32 +108,32 @@
 						@click="selectOnlineGameDir"
 					/>
 				</div>
-				<div class="grid grid-cols-2 gap-2">
-					<UButton color="primary" @click="addOnlinePatch">
-						添加补丁
-					</UButton>
-					<UButton color="neutral" variant="outline" :disabled="!onlinePatchApplied" @click="removeOnlinePatch">
-						移除补丁
-					</UButton>
-				</div>
+			<div class="grid grid-cols-2 gap-2">
+				<UButton color="primary" @click="addOnlinePatch">
+					{{ t('patchArea.addPatch') }}
+				</UButton>
+				<UButton color="neutral" variant="outline" :disabled="!onlinePatchApplied" @click="removeOnlinePatch">
+					{{ t('patchArea.removePatch') }}
+				</UButton>
+			</div>
 			</div>
 
-			<UModal v-model:open="helpOpen" title="使用说明">
-				<template #body>
-					<div class="grid gap-2">
-						<div
-							class="rounded-lg border border-(--surface-border) p-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-200"
-						>
-							联网补丁仅支持非 Denuvo Anti-Tamper 游戏，添加后可正常使用联机等联网功能
-						</div>
-						<div
-							class="rounded-lg border border-(--surface-border) p-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-200"
-						>
-							游玩时需启动 Steam 客户端，否则会无法启动游戏
-						</div>
+		<UModal v-model:open="helpOpen" :title="t('patchArea.helpTitle')">
+			<template #body>
+				<div class="grid gap-2">
+					<div
+						class="rounded-lg border border-(--surface-border) p-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-200"
+					>
+						{{ t('patchArea.helpDenuvo') }}
 					</div>
-				</template>
-			</UModal>
+					<div
+						class="rounded-lg border border-(--surface-border) p-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-200"
+					>
+						{{ t('patchArea.helpSteamClient') }}
+					</div>
+				</div>
+			</template>
+		</UModal>
 		</div>
 	</div>
 </template>
@@ -143,6 +143,7 @@
 	import { open } from "@tauri-apps/plugin-dialog";
 	import { open as openUrl } from "@tauri-apps/plugin-shell";
 	import { computed, ref } from "vue";
+	import { t } from "~/locales";
 
 	const { showToast, currentInfo, gameName } = useDepotGameDL();
 
@@ -187,7 +188,7 @@
 				localAppId.value = m[1];
 			} else {
 				localAppId.value = "";
-				showToast("内容无效");
+				showToast(t('patchArea.toastInvalidContent'));
 			}
 		}
 
@@ -209,7 +210,7 @@
 
 	async function addPatch() {
 		if (!localGameDir.value) {
-			showToast("请先选择游戏目录");
+			showToast(t('patchArea.toastSelectGameDirFirst'));
 			return;
 		}
 		try {
@@ -217,7 +218,7 @@
 				gameDir: localGameDir.value,
 				appId: localAppId.value
 			});
-			showToast("补丁已添加");
+			showToast(t('patchArea.toastPatchAdded'));
 		} catch (e) {
 			showToast(String(e));
 		}
@@ -225,7 +226,7 @@
 
 	async function removePatch() {
 		if (!localGameDir.value) {
-			showToast("请先选择游戏目录");
+			showToast(t('patchArea.toastSelectGameDirFirst'));
 			return;
 		}
 		try {
@@ -235,7 +236,7 @@
 			return;
 		}
 
-		showToast("已移除补丁");
+		showToast(t('patchArea.toastPatchRemoved'));
 	}
 
 	async function selectOnlinePatchDir() {
@@ -254,11 +255,11 @@
 
 	async function addOnlinePatch() {
 		if (!onlinePatchPath.value) {
-			showToast("请先选择补丁文件夹");
+			showToast(t('patchArea.toastSelectPatchFolderFirst'));
 			return;
 		}
 		if (!onlineGameDir.value) {
-			showToast("请先选择游戏目录");
+			showToast(t('patchArea.toastSelectGameDirFirst'));
 			return;
 		}
 		try {
@@ -267,7 +268,7 @@
 				gameDir: onlineGameDir.value
 			});
 			onlinePatchApplied.value = true;
-			showToast("补丁已添加");
+			showToast(t('patchArea.toastPatchAdded'));
 		} catch (e) {
 			showToast(String(e));
 		}
@@ -275,7 +276,7 @@
 
 	async function removeOnlinePatch() {
 		if (!onlineGameDir.value) {
-			showToast("请先选择游戏目录");
+			showToast(t('patchArea.toastSelectGameDirFirst'));
 			return;
 		}
 		try {
@@ -285,7 +286,7 @@
 			return;
 		}
 		onlinePatchApplied.value = false;
-		showToast("已移除补丁");
+		showToast(t('patchArea.toastPatchRemoved'));
 	}
 
 	function openPatchSite() {

@@ -1,4 +1,5 @@
 use crate::downloader::depot_path;
+use crate::locales;
 use crate::parser::GameInfo;
 use reqwest::Client;
 use std::collections::HashMap;
@@ -364,7 +365,7 @@ pub async fn prepare_download(
     use_local: bool,
 ) -> Result<Vec<u32>, String> {
     let depot_dir = depot_path(&app_handle);
-    std::fs::create_dir_all(&depot_dir).map_err(|e| format!("创建 depot 目录失败: {}", e))?;
+    std::fs::create_dir_all(&depot_dir).map_err(|e| format!("{}: {}", locales::strings().create_depot_dir_failed, e))?;
 
     if !use_local {
         CANCEL_MANIFEST.store(false, Ordering::Relaxed);
@@ -381,7 +382,7 @@ pub async fn prepare_download(
         let manifests = fetch_latest_manifests(&game_info).await;
         let total = manifests.len();
         if total == 0 {
-            return Err("无法获取任何清单，请检查网络或稍后再试".into());
+            return Err(locales::strings().fetch_all_manifests_failed.into());
         }
 
         let _ = app_handle.emit(
@@ -396,7 +397,7 @@ pub async fn prepare_download(
         let mut processed = 0;
         for (did, mid) in &manifests {
             if CANCEL_MANIFEST.load(Ordering::Relaxed) {
-                return Err("清单获取已取消".into());
+                return Err(locales::strings().manifest_cancelled.into());
             }
             let rc = fetch_request_code(*mid).await;
             let success = match rc {
@@ -407,7 +408,7 @@ pub async fn prepare_download(
                 let _ = std::fs::remove_file(
                     depot_dir.join(format!("{}_{}.manifest", did, mid)),
                 );
-                return Err("清单获取已取消".into());
+                return Err(locales::strings().manifest_cancelled.into());
             }
             if success || has_local_manifest(&depot_dir, *did) {
                 let _ = app_handle.emit("manifest-ready", *did);
@@ -440,12 +441,12 @@ pub async fn prepare_download(
 
     if !depot_dir.join("config.vdf").exists() {
         generate_config_vdf(&game_info, &depot_dir)
-            .map_err(|e| format!("生成 config.vdf 失败: {}", e))?;
+            .map_err(|e| format!("{}: {}", locales::strings().gen_config_vdf_failed, e))?;
     }
 
     let prepared_ids = collect_prepared_depot_ids_in_order(&game_info, &depot_dir);
     if prepared_ids.is_empty() {
-        return Err("准备失败：depot 目录中没有 manifest 文件".into());
+        return Err(locales::strings().prepare_no_manifest.into());
     }
 
     Ok(prepared_ids)

@@ -5,10 +5,10 @@
 		>
 			<div class="grid auto-cols-max grid-flow-col items-center gap-2">
 				<UButton color="neutral" @click="importKey">
-					导入清单
+					{{ t('index.importManifest') }}
 				</UButton>
 				<UButton color="neutral" @click="cleanCache">
-					清理缓存
+					{{ t('index.cleanCache') }}
 				</UButton>
 			</div>
 			<div class="grid auto-cols-max grid-flow-col items-center gap-2">
@@ -36,7 +36,7 @@
 					color="neutral"
 					variant="outline"
 					icon="i-fluent:info-20-regular"
-					aria-label="关于"
+					:aria-label="t('index.about')"
 					@click="aboutOpen = true"
 				/>
 			</div>
@@ -67,6 +67,7 @@
 	import { computed, onMounted, ref } from "vue";
 	import { initDepotGameDL } from "~/composables/useDepotGameDL";
 	import { useUpdater } from "~/composables/useUpdater";
+	import { t } from "~/locales";
 
 	initDepotGameDL();
 
@@ -98,7 +99,7 @@
 	const pathPlaceholder = computed(() => {
 		const base = downloadDir.value || defaultDownloadDir.value;
 		if (gameName.value && base) return `${base.replace(/[\\/]+$/, "")}\\${gameName.value}`;
-		return base || "选择下载目录";
+		return base || t('index.selectDownloadDir');
 	});
 
 	function onPathInput(val: string) {

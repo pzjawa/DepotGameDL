@@ -3,7 +3,7 @@
 		class="grid size-full grid-rows-[auto_1fr] overflow-hidden rounded-lg border border-(--surface-border) bg-(--surface) shadow-sm"
 	>
 		<div class="grid grid-flow-col items-center justify-between border-b border-(--surface-border) px-4 py-3">
-			<span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ gameName || "下载任务" }}</span>
+			<span class="font-semibold text-neutral-700 dark:text-neutral-200">{{ gameName || t('downloadTasks.downloadTask') }}</span>
 			<span class="text-xs text-neutral-500 dark:text-neutral-400"> {{ completedCount }}/{{ totalDepots }} </span>
 		</div>
 		<div class="overflow-y-auto p-4">
@@ -46,6 +46,7 @@
 	import { icons as tabler } from "@iconify-json/tabler";
 	import { svgToIcon } from "morphicons/adapters";
 	import { MorphIcon } from "morphicons/vue";
+	import { t } from "~/locales";
 
 	const Square = svgToIcon(tabler.icons.square!.body);
 	const Check = svgToIcon(tabler.icons.check!.body);
