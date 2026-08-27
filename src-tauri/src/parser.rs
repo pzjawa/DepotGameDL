@@ -60,10 +60,7 @@ pub struct GameInfo {
     pub depots: Vec<DepotInfo>,
     pub dlc_depots: Vec<u32>,
     pub tokens: HashMap<u32, String>,
-    pub missing_keys: Vec<u32>,
     pub manifest_ids: HashMap<u32, u64>,
-    #[serde(skip)]
-    pub file_path: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -82,9 +79,7 @@ pub fn parse_lua(content: &str) -> Option<GameInfo> {
         depots: Vec::new(),
         dlc_depots: Vec::new(),
         tokens: HashMap::new(),
-        missing_keys: Vec::new(),
         manifest_ids: HashMap::new(),
-        file_path: None,
     };
 
     let re_depot = Regex::new(r#"addappid\((\d+),\s*\d+,\s*"([^"]*)"\)([^\r\n]*)"#).unwrap();
@@ -108,13 +103,7 @@ pub fn parse_lua(content: &str) -> Option<GameInfo> {
         if seen.contains(&id) || id == info.appid.unwrap_or(0) {
             continue;
         }
-        let start = cap.get(0).unwrap().start();
-        let before = &content[std::cmp::max(0, start as isize - 100) as usize..start];
-        if before.contains("缺少清单") {
-            info.missing_keys.push(id);
-        } else {
-            info.dlc_depots.push(id);
-        }
+        info.dlc_depots.push(id);
     }
 
     if info.appid.is_none() && !info.depots.is_empty() {

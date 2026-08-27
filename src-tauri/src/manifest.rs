@@ -43,7 +43,6 @@ static REQUEST_CODE_SOURCES: [RequestCodeSource; 4] = [
 
 pub async fn fetch_latest_manifests(
     game_info: &GameInfo,
-    emitter: &AppHandle,
 ) -> HashMap<u32, u64> {
     let appid = game_info.appid.unwrap_or(0);
     let depot_ids: Vec<u32> = game_info.depots.iter().map(|d| d.id).collect();
@@ -54,7 +53,6 @@ pub async fn fetch_latest_manifests(
         .build()
         .unwrap_or_default();
     let url = format!("{}{}", STEAMCMD_API, appid);
-    let _ = emitter;
 
     if let Ok(resp) = client.get(&url).send().await {
         if resp.status().is_success() {
@@ -267,13 +265,11 @@ pub async fn download_manifest(
     manifest_id: u64,
     request_code: &str,
     out_dir: &Path,
-    emitter: &AppHandle,
 ) -> bool {
     let url = format!(
         "{}/depot/{}/manifest/{}/5/{}",
         CDN_BASE, depot_id, manifest_id, request_code
     );
-    let _ = emitter;
 
     let client = Client::builder()
         .timeout(Duration::from_secs(60))
@@ -382,7 +378,7 @@ pub async fn prepare_download(
             }),
         );
 
-        let manifests = fetch_latest_manifests(&game_info, &app_handle).await;
+        let manifests = fetch_latest_manifests(&game_info).await;
         let total = manifests.len();
         if total == 0 {
             return Err("无法获取任何清单，请检查网络或稍后再试".into());
@@ -404,7 +400,7 @@ pub async fn prepare_download(
             }
             let rc = fetch_request_code(*mid).await;
             let success = match rc {
-                Some(code) => download_manifest(*did, *mid, &code, &depot_dir, &app_handle).await,
+                Some(code) => download_manifest(*did, *mid, &code, &depot_dir).await,
                 None => false,
             };
             if CANCEL_MANIFEST.load(Ordering::Relaxed) {

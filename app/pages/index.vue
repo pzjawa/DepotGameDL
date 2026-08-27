@@ -70,7 +70,6 @@
 
 	initDepotGameDL();
 
-	// 启动时静默检查更新：有新版本才弹「发现新版本」对话框，检查失败不打扰用户
 	const { checkUpdate: checkForUpdate } = useUpdater();
 	onMounted(() => {
 		checkForUpdate(true);

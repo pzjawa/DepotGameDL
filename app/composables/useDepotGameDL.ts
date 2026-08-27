@@ -5,7 +5,6 @@ import { computed, reactive, ref } from "vue";
 
 let toast: ReturnType<typeof useToast> | null = null;
 
-// ========== 全局状态 ==========
 const progress = ref(0);
 const progressText = ref("");
 const progressDepotId = ref("");
@@ -54,8 +53,6 @@ function showToast(title: string) {
 			progress: false,
 			duration: 3000
 		});
-	} else {
-		console.warn("Toast 尚未初始化");
 	}
 }
 
@@ -102,7 +99,6 @@ function depotDisplayName(id: number | string): string {
 	return depotName(id) ?? String(id);
 }
 
-// depot 的 addappid 行尾注释（Rust 解析进 DepotInfo.name），无注释返回 null
 function depotName(id: number | string): string | null {
 	const num = Number(id);
 	if (Number.isNaN(num)) return null;
